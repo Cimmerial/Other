@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Interview Guide Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .questions-group {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+
+        .question {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .response-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .response-button {
+            padding: 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .response-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .response-button.positive {
+            background: #e6fff2;
+            color: #006644;
+        }
+
+        .response-button.neutral {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .response-button.negative {
+            background: #ffe6e6;
+            color: #990000;
+        }
+
+        .response-button.enthusiastic {
+            background: #e6f7ff;
+            color: #0066cc;
+        }
+
+        .response-button.confused {
+            background: #fff3e6;
+            color: #995200;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .path-indicator {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .emotion-hint {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .response-desc {
+            font-size: 0.85em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .conclusion {
+            padding: 15px;
+            background: #e6f7ff;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function App() {
+            const [currentPath, setCurrentPath] = React.useState(['start']);
+            const [history, setHistory] = React.useState([]);
+
+            const questionTree = {
+                start: {
+                    questions: [
+                        "What motivates you most in your work?",
+                        "How do you feel when faced with learning a new technology?",
+                        "What's your preferred work environment when working with new tech?",
+                        "How do you stay productive when the technology you're using presents challenges?",
+                        "What aspects of new tech excite or frustrate you the most?",
+                        "How do you manage your thoughts and feelings when a tool doesn't work as expected?"
+
+                    ],
+                    hint: "Observe their overall energy and engagement",
+                    responses: [
+                        {
+                            text: "Innovation & Growth",
+                            desc: "Thrives on challenging projects, self-directed learning, remote/flexible work",
+                            path: "innovator_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Structure & Stability",
+                            desc: "Values clear processes, documented learning paths, traditional office setting",
+                            path: "structured_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Team & Collaboration",
+                            desc: "Energized by group work, peer learning, hybrid environment",
+                            path: "team_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Impact & Results",
+                            desc: "Focused on deliverables, practical learning, outcome-based environment",
+                            path: "impact_path",
+                            emotion: "enthusiastic"
+                        }
+                    ]
+                },
+                innovator_path: {
+                    questions: [
+                        "How do you validate new ideas, and what makes you confident in their potential?",
+                        "How do you feel about taking risks when it comes to new technologies or approaches?",
+                        "How do you personally define success in your work or projects?",
+                        "How do you adapt emotionally and practically when a project isn't going as planned?",
+                        "What metrics or indicators do you rely on to track progress and stay motivated?",
+                        "How do you handle setbacks or failure, and how does it influence your approach moving forward?"
+
+
+                    ],
+                    hint: "Notice their innovation methodology",
+                    responses: [
+                        {
+                            text: "Data-Driven Pioneer",
+                            desc: "Uses metrics and experiments to validate ideas safely",
+                            path: "data_innovation",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Rapid Prototyper",
+                            desc: "Quick iterations with minimal viable features",
+                            path: "rapid_prototype",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Systematic Innovator",
+                            desc: "Structured approach to testing new concepts",
+                            path: "systematic_innovation",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Collaborative Explorer",
+                            desc: "Team-based approach to innovation and validation",
+                            path: "team_innovation",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                data_innovation: {
+                    questions: [
+                        "How do you handle conflicting data points, especially when they challenge your assumptions?",
+                        "What metrics do you prioritize when evaluating success, and how do those align with your values?",
+                        "How do you communicate data insights to stakeholders in a way that resonates emotionally with them?",
+                        "How do you ensure data-driven decisions not only align with business goals but also with team priorities?",
+                        "What tools or methods do you feel most comfortable using when analyzing complex datasets, and why?",
+                        "How do you manage the frustration that can come with dealing with incomplete or conflicting data?"
+
+                    ],
+                    hint: "Observe their analytical decision-making process",
+                    responses: [
+                        {
+                            text: "Statistical Purist",
+                            desc: "Relies heavily on statistical significance and thorough analysis",
+                            path: "stats_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Balanced Analyzer",
+                            desc: "Combines quantitative and qualitative insights",
+                            path: "balanced_analysis",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Business-First Analyst",
+                            desc: "Prioritizes business impact over statistical perfection",
+                            path: "business_metrics",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Insight Storyteller",
+                            desc: "Focuses on narrative and stakeholder communication",
+                            path: "data_storytelling",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                stats_path: {
+                    questions: [
+                        "How do you handle statistical outliers, and how does it affect your confidence in the results?",
+                        "What's your approach to sample size determination, and how do you feel about the trade-offs involved?",
+                        "How do you validate your statistical models, and what role does intuition play in that process?",
+                        "How do you choose the right statistical tests, especially when faced with uncertainty?",
+                        "What steps do you take to ensure your analysis is unbiased, and how do you address biases that may arise?",
+                        "How do you deal with the emotional aspect of uncertainty in statistical analysis, particularly when the results are inconclusive?"
+                    ],
+                    hint: "Watch for their statistical rigor and methodology",
+                    responses: [
+                        {
+                            text: "Robust Statistician",
+                            desc: "Emphasizes outlier-resistant methods and thorough validation",
+                            path: "robust_stats",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Bayesian Thinker",
+                            desc: "Incorporates prior knowledge and probabilistic reasoning",
+                            path: "bayesian_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Classical Analyst",
+                            desc: "Relies on traditional statistical methods and hypothesis testing",
+                            path: "classical_stats",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Applied Statistician",
+                            desc: "Focuses on practical applications over theoretical purity",
+                            path: "applied_stats",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                innovator_path: {
+                    questions: [
+                        "How do you validate new ideas?",
+                        "What's your approach to risk management?",
+                        "How do you measure success?",
+                        "How do you process feedback and apply it?",
+                        "How do you balance immediate tasks with long-term goals?",
+                        "How do you feel when your plans don’t go as expected?"
+
+
+                    ],
+                    hint: "Notice their innovation methodology",
+                    responses: [
+                        {
+                            text: "Data-Driven Pioneer",
+                            desc: "Uses metrics and experiments to validate ideas safely",
+                            path: "data_innovation",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Rapid Prototyper",
+                            desc: "Quick iterations with minimal viable features",
+                            path: "rapid_prototype",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Systematic Innovator",
+                            desc: "Structured approach to testing new concepts",
+                            path: "systematic_innovation",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Collaborative Explorer",
+                            desc: "Team-based approach to innovation and validation",
+                            path: "team_innovation",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                "systematic_innovation": {
+                    "questions": [
+                        "How do you structure your innovation process?",
+                        "What frameworks do you use for evaluating new ideas?",
+                        "How do you balance structure with creativity?"
+                    ],
+                    "hint": "Observe their methodical approach to innovation",
+                    "responses": [
+                        {
+                            "text": "Lean Innovator",
+                            "desc": "Applies Lean principles to innovation cycles",
+                            "path": "lean_methodology",
+                            "emotion": "positive"
+                        },
+                        {
+                            "text": "Design Thinker",
+                            "desc": "Uses human-centered design to structure innovation",
+                            "path": "design_thinking",
+                            "emotion": "enthusiastic"
+                        },
+                        {
+                            "text": "Process Architect",
+                            "desc": "Develops clear steps and frameworks for innovation",
+                            "path": "structured_innovation",
+                            "emotion": "neutral"
+                        },
+                        {
+                            "text": "Strategic Experimenter",
+                            "desc": "Systematically tests multiple concepts before scaling",
+                            "path": "strategic_experimentation",
+                            "emotion": "positive"
+                        }
+                    ]
+                },
+                "data_innovation": {
+                    "questions": [
+                        "How do you handle conflicting data points?",
+                        "What metrics do you prioritize when evaluating success?",
+                        "How do you communicate data insights to stakeholders?"
+                    ],
+                    "hint": "Observe their analytical decision-making process",
+                    "responses": [
+                        {
+                            "text": "Statistical Purist",
+                            "desc": "Relies heavily on statistical significance and thorough analysis",
+                            "path": "stats_path",
+                            "emotion": "positive"
+                        },
+                        {
+                            "text": "Balanced Analyzer",
+                            "desc": "Combines quantitative and qualitative insights",
+                            "path": "balanced_analysis",
+                            "emotion": "enthusiastic"
+                        },
+                        {
+                            "text": "Business-First Analyst",
+                            "desc": "Prioritizes business impact over statistical perfection",
+                            "path": "business_metrics",
+                            "emotion": "neutral"
+                        },
+                        {
+                            "text": "Insight Storyteller",
+                            "desc": "Focuses on narrative and stakeholder communication",
+                            "path": "data_storytelling",
+                            "emotion": "positive"
+                        }
+                    ]
+                },
+                "stats_path": {
+                    "questions": [
+                        "How do you handle statistical outliers in your analysis?",
+                        "What's your approach to sample size determination?",
+                        "How do you validate your statistical models?"
+                    ],
+                    "hint": "Watch for their statistical rigor and methodology",
+                    "responses": [
+                        {
+                            "text": "Robust Statistician",
+                            "desc": "Emphasizes outlier-resistant methods and thorough validation",
+                            "path": "robust_stats",
+                            "emotion": "positive"
+                        },
+                        {
+                            "text": "Bayesian Thinker",
+                            "desc": "Incorporates prior knowledge and probabilistic reasoning",
+                            "path": "bayesian_path",
+                            "emotion": "enthusiastic"
+                        },
+                        {
+                            "text": "Classical Analyst",
+                            "desc": "Relies on traditional statistical methods and hypothesis testing",
+                            "path": "classical_stats",
+                            "emotion": "neutral"
+                        },
+                        {
+                            "text": "Applied Statistician",
+                            "desc": "Focuses on practical applications over theoretical purity",
+                            "path": "applied_stats",
+                            "emotion": "positive"
+                        }
+                    ]
+                },
+                balanced_analysis: {
+                    questions: [
+                        "How do you feel when faced with different perspectives or opinions?",
+                        "How do you react when things don't go as planned?",
+                        "How do you handle uncertainty in decision-making?",
+                        "How do you ensure your work feels meaningful and makes an impact?",
+                        "How do you keep others informed when things are unclear?",
+                        "How do you deal with frustration when solutions aren't immediately obvious?"
+
+
+                    ],
+                    hint: "Observe their approach to holistic analysis",
+                    responses: [
+                        {
+                            text: "Mixed Methods Expert",
+                            desc: "Skillfully combines multiple data types and approaches",
+                            path: "mixed_methods",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Contextual Analyst",
+                            desc: "Emphasizes business context in data interpretation",
+                            path: "context_analysis",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Synthesis Specialist",
+                            desc: "Excels at finding patterns across different data types",
+                            path: "synthesis_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Decision Facilitator",
+                            desc: "Focuses on enabling informed decision-making",
+                            path: "decision_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+
+                mixed_methods: {
+                    questions: [
+                        "How do you feel when you're introduced to new technology?",
+                        "How do you typically react when you have to learn a new tool or system?",
+                        "Can you describe your relationship with technology—do you see it as a tool, a challenge, or something else?",
+                        "How do you feel when a piece of tech works really well for you?",
+                        "How do you handle the frustrations that come with technology when it doesn’t meet your expectations?"
+
+                    ],
+                    hint: "Notice their integration methodology",
+                    responses: [
+                        {
+                            text: "Sequential Integrator",
+                            desc: "Uses one method's results to inform the other's design",
+                            path: "sequential_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Concurrent Analyzer",
+                            desc: "Applies multiple methods simultaneously for triangulation",
+                            path: "concurrent_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Adaptive Mixer",
+                            desc: "Adjusts method mix based on emerging insights",
+                            path: "adaptive_mix",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Pragmatic Synthesizer",
+                            desc: "Chooses methods based on practical utility",
+                            path: "pragmatic_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+
+                robust_stats: {
+                    questions: [
+                        "How do you feel about ensuring the reliability of your analysis?",
+                        "How do you manage the frustration when data quality becomes an issue?",
+                        "How do you approach validating your assumptions, especially when things are uncertain?",
+                        "How do you handle the anxiety or pressure when data is missing or incomplete?",
+                        "What strategies help you feel confident that your analysis is free from bias?"
+
+
+                    ],
+                    hint: "Observe their statistical validation approach",
+                    responses: [
+                        {
+                            text: "Methodical Validator",
+                            desc: "Systematic approach to testing assumptions and methods",
+                            path: "validation_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Distribution Expert",
+                            desc: "Focuses on understanding underlying data distributions",
+                            path: "distribution_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Quality Assurance Specialist",
+                            desc: "Emphasizes data quality and cleaning procedures",
+                            path: "quality_stats",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Cross-Validation Master",
+                            desc: "Expert in model validation and testing",
+                            path: "crossval_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                rapid_prototype: {
+                    questions: [
+                        "How do you feel about balancing speed with quality in your work?",
+                        "How do you manage the stress that comes with technical debt?",
+                        "What factors influence your decision-making when choosing features for an MVP?",
+                        "How do you cope with the pressure of resource constraints while developing new features?",
+                        "How do you handle the challenge of ensuring scalability while maintaining speed?"
+
+                    ],
+                    hint: "Watch for their prioritization methods",
+                    responses: [
+                        {
+                            text: "Speed Optimizer",
+                            desc: "Maximizes delivery speed with calculated technical debt",
+                            path: "speed_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Quality Guardian",
+                            desc: "Maintains high standards while moving quickly",
+                            path: "quality_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Balance Seeker",
+                            desc: "Carefully weighs tradeoffs for each decision",
+                            path: "balanced_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Adaptive Shipper",
+                            desc: "Adjusts approach based on project context",
+                            path: "adaptive_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                team_path: {
+                    questions: [
+                        "How do you handle team conflicts, especially when emotions run high?",
+                        "How do you approach mentoring when someone is struggling?",
+                        "How do you keep your team motivated, even during challenging times?",
+                        "How do you foster a collaborative environment where everyone feels heard?",
+                        "How do you ensure effective communication when there's tension within the team?",
+                        "How do you manage your own emotions when navigating team dynamics?"
+
+
+                    ],
+                    hint: "Observe their leadership and collaboration style",
+                    responses: [
+                        {
+                            text: "Servant Leader",
+                            desc: "Focuses on removing obstacles and supporting growth",
+                            path: "servant_leadership",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Culture Builder",
+                            desc: "Emphasizes team culture and psychological safety",
+                            path: "culture_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Technical Mentor",
+                            desc: "Prioritizes skill development and knowledge sharing",
+                            path: "mentor_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Results Coach",
+                            desc: "Balances team wellbeing with performance goals",
+                            path: "coach_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                servant_leadership: {
+                    questions: [
+                        "How do you identify obstacles within the team, and how does it make you feel when they arise?",
+                        "How do you feel when delegating tasks, especially if it involves trusting others with key responsibilities?",
+                        "How do you assess the overall health of your team, and what signs do you look for?",
+                        "How do you handle the emotional challenge of addressing underperformance within the team?",
+                        "How do you ensure team members feel aligned with project goals, especially when priorities shift?",
+                        "How do you manage the pressure of ensuring everyone is on the same page throughout a project?"
+                    ],
+                    hint: "Watch for their team support patterns",
+                    responses: [
+                        {
+                            text: "Empowerment Focus",
+                            desc: "Emphasizes autonomy and individual growth",
+                            path: "empowerment_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Process Optimizer",
+                            desc: "Streamlines workflows and removes bottlenecks",
+                            path: "optimization_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Team Advocate",
+                            desc: "Champions team needs and resource allocation",
+                            path: "advocacy_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Growth Facilitator",
+                            desc: "Creates opportunities for skill development",
+                            path: "facilitation_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                impact_path: {
+                    questions: [
+                        "How do you define impact, and how does it feel when your work creates meaningful change?",
+                        "How do you manage the emotional ups and downs of scaling solutions?",
+                        "How do you balance the immediate pressure of short-term impact with long-term goals?",
+                        "How do you ensure your solutions are sustainable, especially when facing competing demands?",
+                        "How do you prioritize areas for maximum impact, and how do you feel about making those tough choices?",
+                        "How do you handle the stress of ensuring your work leaves a lasting positive effect?"
+
+
+                    ],
+                    hint: "Notice their impact evaluation framework",
+                    responses: [
+                        {
+                            text: "Scale Optimizer",
+                            desc: "Focuses on solutions that can reach many users",
+                            path: "scale_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Quality Maximizer",
+                            desc: "Prioritizes depth of impact over breadth",
+                            path: "depth_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Balanced Impactor",
+                            desc: "Seeks equilibrium between reach and depth",
+                            path: "balanced_impact",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Innovation Scaler",
+                            desc: "Combines novel solutions with scalable approaches",
+                            path: "innovative_scale",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                scale_path: {
+                    questions: [
+                        "How do you feel about making sure your solutions are resilient?",
+                        "How do you deal with the pressure of improving performance?",
+                        "How do you manage the stress of increasing complexity?",
+                        "How do you balance flexibility with long-term growth?",
+                        "How do you handle the uncertainty when testing new systems?",
+                        "How do you cope with the pressure of making tough decisions?"
+                    ],
+                    hint: "Observe their scaling methodology",
+                    responses: [
+                        {
+                            text: "Infrastructure First",
+                            desc: "Prioritizes robust architecture and systems",
+                            path: "infrastructure_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Iterative Scaler",
+                            desc: "Grows solutions through controlled iterations",
+                            path: "iterative_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Efficiency Expert",
+                            desc: "Focuses on optimization and resource usage",
+                            path: "efficiency_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Resilience Builder",
+                            desc: "Emphasizes reliability and fault tolerance",
+                            path: "resilience_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                tech_experience_path: {
+                    questions: [
+                        "Tell me about a piece of technology you really enjoy using – what makes it special to you?",
+                        "How has your relationship with this technology changed over time?",
+                        "Are there any aspects of this technology that still frustrate you?",
+                        "How do you keep up with new features or updates for tools you use?",
+                        "How do you feel about the future impact of this technology on your work or industry?",
+                        "How does using this technology make you feel more confident in your work?"
+                    ],
+                    hint: "Watch for their emotional connection to technology",
+                    responses: [
+                        {
+                            text: "Intuitive Adopter",
+                            desc: "Values immediate usability, clear interfaces, natural progression of features",
+                            path: "intuitive_tech",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Growth Explorer",
+                            desc: "Appreciates discovering depth over time, learning advanced features gradually",
+                            path: "tech_growth",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Efficiency Seeker",
+                            desc: "Focuses on productivity gains, streamlined workflows, minimal friction",
+                            path: "efficiency_tech",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Feature Maximizer",
+                            desc: "Enjoys comprehensive functionality, power user features, customization",
+                            path: "power_user",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                intuitive_tech: {
+                    questions: [
+                        "How do you feel when deciding whether to learn a new technology?",
+                        "What makes a technology feel approachable or easy for you to learn?",
+                        "How do you decide whether to stick with what you know or try something new?",
+                        "How do you handle the uncertainty when considering the future of a new technology?",
+                        "What makes you excited or hesitant about investing time in learning a new tool?",
+                        "How do you weigh the emotional and practical side of adopting new technology?"
+                    ],
+                    hint: "Observe their decision-making process for tech adoption",
+                    responses: [
+                        {
+                            text: "Practical Evaluator",
+                            desc: "Prioritizes clear use cases and immediate value",
+                            path: "practical_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Comfort-Zone Expander",
+                            desc: "Gradually builds confidence through incremental challenges",
+                            path: "comfort_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Risk-Reward Balancer",
+                            desc: "Carefully weighs learning investment against potential benefits",
+                            path: "balance_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Innovation Seeker",
+                            desc: "Drawn to novel solutions and breakthrough approaches",
+                            path: "innovation_seeker",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                tech_growth: {
+                    questions: [
+                        "How do you feel about learning new technology?",
+                        "How do you push through frustration when learning a new tool?",
+                        "How important is documentation to you when learning something new?",
+                        "How do you know when you've truly mastered a tool or technology?",
+                        "How do you stay motivated when the learning process gets tough?",
+                        "How do you manage the emotional ups and downs of learning complex tech?"
+                    ],
+                    hint: "Notice their learning style preferences",
+                    responses: [
+                        {
+                            text: "Hands-On Learner",
+                            desc: "Prefers experimentation and practical application",
+                            path: "hands_on",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Structured Student",
+                            desc: "Values comprehensive tutorials and systematic learning",
+                            path: "structured_learning",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Community Explorer",
+                            desc: "Learns through forums, chat, and peer interaction",
+                            path: "community_learning",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Mixed Method Master",
+                            desc: "Combines multiple learning approaches adaptively",
+                            path: "mixed_learning",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                hands_on: {
+                    questions: [
+                        "How do you feel when troubleshooting through experimentation?",
+                        "What kind of feedback motivates you the most during learning?",
+                        "How do you balance the excitement of exploration with the pressure to get work done?",
+                        "How do you document your progress and keep track of lessons learned?",
+                        "How do you decide whether to keep troubleshooting on your own or ask for help?",
+                        "How do you handle the frustration of hitting roadblocks during your learning?"
+                    ],
+                    hint: "Watch for their experimental learning patterns",
+                    responses: [
+                        {
+                            text: "Systematic Explorer",
+                            desc: "Methods testing with careful documentation of outcomes",
+                            path: "systematic_explore",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Rapid Experimenter",
+                            desc: "Quick tests and immediate feedback loops",
+                            path: "rapid_explore",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Guided Discoverer",
+                            desc: "Combines exploration with structured learning resources",
+                            path: "guided_explore",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Creative Tinkerer",
+                            desc: "Learns through creative problem-solving and edge cases",
+                            path: "creative_explore",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                efficiency_tech: {
+                    questions: [
+                        "How do you feel when evaluating if a new technology is improving your efficiency?",
+                        "How do you cope with the discomfort of transitioning to new tools?",
+                        "What role does automation play in making your work feel more manageable?",
+                        "How do you feel about the impact new tools have on your team's productivity?",
+                        "How do you avoid the stress of introducing unnecessary complexity with new tools?",
+                        "How do you balance excitement with caution when trying out a new tool?"
+                    ],
+                    hint: "Observe their efficiency optimization approach",
+                    responses: [
+                        {
+                            text: "Metrics Driver",
+                            desc: "Focuses on measurable productivity improvements",
+                            path: "metrics_efficiency",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Flow Optimizer",
+                            desc: "Prioritizes smooth, uninterrupted work processes",
+                            path: "flow_efficiency",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Resource Conservator",
+                            desc: "Balances efficiency gains against resource costs",
+                            path: "resource_efficiency",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Automation Pioneer",
+                            desc: "Seeks to automate repetitive tasks whenever possible",
+                            path: "automation_efficiency",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                power_user: {
+                    questions: [
+                        "How do you feel when discovering and mastering advanced features?",
+                        "How do you approach personalizing your tools and workspace to make them feel more intuitive?",
+                        "How do you balance the excitement of powerful features with the need for simplicity?",
+                        "How do you decide if adding third-party plugins or extensions is worth the risk?",
+                        "How do you ensure your customizations don’t disrupt teamwork or collaboration?",
+                        "How do you handle the tension between customization and standardization in your tools?"
+                    ],
+                    hint: "Notice their approach to tool mastery",
+                    responses: [
+                        {
+                            text: "Feature Completionist",
+                            desc: "Systematically learns and uses all available features",
+                            path: "completionist",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Efficiency Maximizer",
+                            desc: "Focuses on features that maximize productivity",
+                            path: "efficiency_master",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Customization Expert",
+                            desc: "Creates highly personalized tool environments",
+                            path: "custom_master",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Balanced Power User",
+                            desc: "Selectively masters features based on value",
+                            path: "balanced_power",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                structured_path: {
+                    questions: [
+                        "How do you feel when organizing your work for the day?",
+                        "What tools do you rely on most to keep you feeling productive?",
+                        "How do you manage the stress of tight deadlines?",
+                        "How do you handle the pressure when juggling multiple deadlines?",
+                        "How do you maintain your confidence and quality of work when time is limited?",
+                        "How do you keep your motivation up when deadlines are looming?"
+                    ],
+                    hint: "Watch for their organizational patterns",
+                    responses: [
+                        {
+                            text: "Digital Organizer",
+                            desc: "Heavy reliance on project management tools",
+                            path: "digital_structured",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Agile Practitioner",
+                            desc: "Sprint-based planning with regular reviews",
+                            path: "agile_structured",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Traditional Planner",
+                            desc: "Classic project management approaches",
+                            path: "traditional_structured",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Flexible Organizer",
+                            desc: "Adaptable approach combining various methods",
+                            path: "flexible_structured",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                digital_structured: {
+                    questions: [
+                        "How do you feel when choosing new digital tools to add to your workflow?",
+                        "What's your process for organizing information in a way that feels natural to you?",
+                        "How do you manage the challenge of maintaining consistency across different tools?",
+                        "How do you ensure your tools fit seamlessly into your team's workflow without causing frustration?",
+                        "How do you decide if a tool is still worth your time after using it for a while?",
+                        "How do you handle the emotional side of abandoning a tool that no longer works for you?"
+                    ],
+                    hint: "Observe their digital organization methodology",
+                    responses: [
+                        {
+                            text: "Integration Focused",
+                            desc: "Prioritizes tools that work together seamlessly",
+                            path: "integration_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "System Builder",
+                            desc: "Creates comprehensive digital workflows",
+                            path: "system_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Minimalist Organizer",
+                            desc: "Uses few tools but maximizes their potential",
+                            path: "minimalist_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Cloud Optimizer",
+                            desc: "Leverages cloud solutions for accessibility",
+                            path: "cloud_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                agile_structured: {
+                    questions: [
+                        "How do you feel about balancing the flexibility of agile with the need for structure?",
+                        "How do you approach sprint planning to make the team feel confident and prepared?",
+                        "How do you stay calm and focused when priorities change mid-sprint?",
+                        "How do you ensure everyone feels aligned and motivated during a sprint?",
+                        "How do you reflect emotionally on the success of a sprint and apply those feelings to improve future ones?",
+                        "How do you manage the stress of adjusting plans while still aiming for sprint success?"
+                    ],
+                    hint: "Watch for their agile implementation style",
+                    responses: [
+                        {
+                            text: "Scrum Purist",
+                            desc: "Strictly follows scrum methodologies",
+                            path: "scrum_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Kanban Enthusiast",
+                            desc: "Focuses on flow and continuous delivery",
+                            path: "kanban_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Hybrid Practitioner",
+                            desc: "Combines different agile approaches",
+                            path: "hybrid_agile",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Lean Optimizer",
+                            desc: "Emphasizes waste reduction and efficiency",
+                            path: "lean_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                traditional_structured: {
+                    questions: [
+                        "How do you feel about the challenge of planning a project and setting milestones?",
+                        "How do you manage the emotional side of allocating resources and keeping track of them?",
+                        "How do you stay calm when managing dependencies and critical paths?",
+                        "How do you navigate the frustration of changes in project scope during development?",
+                        "How do you motivate your team to stay focused and meet deadlines, even when obstacles arise?",
+                        "How do you handle the emotional pressure of ensuring everything stays on track?"
+                    ],
+                    hint: "Notice their traditional management approach",
+                    responses: [
+                        {
+                            text: "Waterfall Expert",
+                            desc: "Excels at sequential, planned execution",
+                            path: "waterfall_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Gantt Specialist",
+                            desc: "Strong focus on timeline visualization",
+                            path: "gantt_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Resource Optimizer",
+                            desc: "Emphasizes efficient resource utilization",
+                            path: "resource_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Risk Manager",
+                            desc: "Prioritizes risk identification and mitigation",
+                            path: "risk_path",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                flexible_structured: {
+                    questions: [
+                        "How do you feel when deciding which methodology is best for a project?",
+                        "How do you adapt workflows in a way that makes the team feel heard and understood?",
+                        "How do you balance the comfort of structure with the excitement of flexibility?",
+                        "How do you emotionally evaluate the success of the methodology after a project?",
+                        "How do you manage the tension between maintaining consistency and encouraging innovation in workflows?",
+                        "How do you feel about changing workflows to stay current with new needs?"
+                    ],
+                    hint: "Observe their adaptability within structure",
+                    responses: [
+                        {
+                            text: "Context Adapter",
+                            desc: "Chooses methods based on project context",
+                            path: "context_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Method Mixer",
+                            desc: "Blends different approaches effectively",
+                            path: "mixer_path",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Team Harmonizer",
+                            desc: "Adapts to team preferences and skills",
+                            path: "team_harmony",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Balance Keeper",
+                            desc: "Maintains stability while enabling change",
+                            path: "balance_keeper",
+                            emotion: "positive"
+                        }
+                    ]
+                },
+                context_path: {
+                    questions: [
+                        "How do you feel when evaluating which approach works best for a project?",
+                        "What emotional factors influence your choice of methodology?",
+                        "How do you transition between different approaches while keeping the team motivated?",
+                        "How do you handle the frustration when a chosen approach isn't working as planned?",
+                        "How do you ensure everyone feels aligned and confident when switching approaches?",
+                        "How do you manage the anxiety that comes with shifting strategies mid-project?"
+                    ],
+                    hint: "Watch for their contextual decision-making",
+                    responses: [
+                        {
+                            text: "Analysis First",
+                            desc: "Thoroughly evaluates before choosing approach",
+                            path: "analysis_path",
+                            emotion: "positive"
+                        },
+                        {
+                            text: "Rapid Adapter",
+                            desc: "Quickly adjusts based on early feedback",
+                            path: "rapid_adapt",
+                            emotion: "enthusiastic"
+                        },
+                        {
+                            text: "Stakeholder Aligned",
+                            desc: "Bases decisions on stakeholder needs",
+                            path: "stakeholder_path",
+                            emotion: "neutral"
+                        },
+                        {
+                            text: "Experience Driven",
+                            desc: "Leverages past insights for decisions",
+                            path: "experience_path",
+                            emotion: "positive"
+                        }
+                    ]
+                }
+            };
+
+            const getCurrentQuestions = () => {
+                const currentLocation = currentPath[currentPath.length - 1];
+                return questionTree[currentLocation] || {
+                    questions: ["Interview Complete"],
+                    hint: "Based on the responses, you can now form a comprehensive understanding of the candidate.",
+                    responses: []
+                };
+            };
+
+            const handleResponse = (response) => {
+                const currentQuestions = getCurrentQuestions();
+                setHistory([
+                    ...history,
+                    {
+                        questions: currentQuestions.questions,
+                        response: response.text,
+                        desc: response.desc
+                    }
+                ]);
+
+                if (response.path) {
+                    setCurrentPath([...currentPath, response.path]);
+                }
+            };
+
+            const goBack = () => {
+                if (currentPath.length > 1) {
+                    setCurrentPath(currentPath.slice(0, -1));
+                    setHistory(history.slice(0, -1));
+                }
+            };
+
+            const reset = () => {
+                setCurrentPath(['start']);
+                setHistory([]);
+            };
+
+            const isComplete = getCurrentQuestions().responses.length === 0;
+
+            return (
+                <div className="card">
+                    <div className="card-header">
+                        <h2>Interview Response Guide</h2>
+                        <button onClick={reset} className="secondary">Reset</button>
+                    </div>
+                    <div className="card-content">
+                        <div className="path-indicator">
+                            Path: {currentPath.join(' → ')}
+                        </div>
+
+                        <div className="questions-group">
+                            {getCurrentQuestions().questions.map((question, idx) => (
+                                <div key={idx} className="question">
+                                    <strong>Q{idx + 1}: </strong>{question}
+                                </div>
+                            ))}
+                            <div className="emotion-hint">{getCurrentQuestions().hint}</div>
+                        </div>
+
+                        <div className="response-buttons">
+                            {getCurrentQuestions().responses.map((response, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleResponse(response)}
+                                    className={`response-button ${response.emotion}`}
+                                >
+                                    {response.text}
+                                    <span className="response-desc">{response.desc}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="button-container">
+                            <button
+                                onClick={goBack}
+                                disabled={currentPath.length <= 1}
+                                className="nav-button secondary"
+                            >
+                                ← Back
+                            </button>
+                        </div>
+
+                        {isComplete && (
+                            <div className="conclusion">
+                                <h3>Interview Complete</h3>
+                                <p>You've reached the end of this interview path. The responses collected provide insights into the candidate's working style, approaches, and preferences.</p>
+                            </div>
+                        )}
+
+                        {history.length > 0 && (
+                            <div className="history">
+                                <h3>Interview History:</h3>
+                                {history.map((item, index) => (
+                                    <div key={index}>
+                                        {item.questions.map((q, qIdx) => (
+                                            <p key={qIdx}><strong>Q{qIdx + 1}: </strong>{q}</p>
+                                        ))}
+                                        <p><strong>A: </strong>{item.response}</p>
+                                        <p><em>Note: </em>{item.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>
