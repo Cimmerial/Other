@@ -6,8 +6,9 @@
 3. [Memory Addressing](#memory)
 4. [Instructions](#instructions)
 5. [Jumps and Control Flow](#jumps)
-6. [Examples](#examples)
-7. [GDB](#gdb)
+6. [LEA vs MOV](#lea-vs-mov)
+7. [Examples](#examples)
+8. [GDB](#gdb)
 
 ## Syntax Differences <a name="syntax"></a>
 
@@ -133,6 +134,52 @@ jmp label           # Unconditional jump
 jmp *%rax           # Indirect jump through register
 jmp *(%rax)         # Indirect jump through memory
 notrack jmp label   # Jump without BTB prediction
+```
+
+## LEA vs MOV Comparison <a name="lea-vs-mov"></a>
+
+### Understanding LEA (Load Effective Address)
+LEA calculates an address without accessing memory, making it useful for:
+- Pointer arithmetic
+- Quick multiplication by constants
+- Complex address calculations
+- Avoiding memory access overhead
+
+```gas
+# LEA Examples
+
+# Basic pointer arithmetic
+leaq 8(%rax), %rbx           # rbx = rax + 8 (no memory access)
+movq 8(%rax), %rbx           # rbx = *(rax + 8) (accesses memory)
+
+# Quick multiplication
+leaq (%rax,%rax,2), %rcx     # rcx = rax * 3
+leaq (%rax,%rax,4), %rcx     # rcx = rax * 5
+
+# Complex calculations
+leaq (%rax,%rbx,4), %rdx     # rdx = rax + (rbx * 4)
+leaq 8(%rax,%rbx,4), %rdx    # rdx = 8 + rax + (rbx * 4)
+
+# Optimized array indexing
+leaq array(,%rax,8), %rbx    # rbx = &array[rax] (8-byte elements)
+```
+
+### Performance Comparison
+```gas
+# LEA vs MOV timing examples
+
+# LEA: Single instruction, no memory access
+leaq 8(%rax), %rbx           # ~1 cycle, calculation only
+
+# MOV: Requires memory access
+movq 8(%rax), %rbx           # ~3-4 cycles, includes memory load
+
+# Complex calculation comparison
+leaq (%rax,%rbx,4), %rcx     # ~1 cycle
+# Equivalent without LEA:
+movq %rbx, %rcx              # ~1 cycle
+shlq $2, %rcx                # ~1 cycle
+addq %rax, %rcx              # ~1 cycle
 ```
 
 ## Examples <a name="examples"></a>
