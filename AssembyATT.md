@@ -4,11 +4,13 @@
 1. [AT&T vs Intel Syntax](#syntax)
 2. [Registers](#registers)
 3. [Memory Addressing](#memory)
-4. [Instructions](#instructions)
-5. [Jumps and Control Flow](#jumps)
-6. [LEA vs MOV](#lea-vs-mov)
-7. [Examples](#examples)
-8. [GDB](#gdb)
+4. [Basic Operators](#operators)
+5. [Instructions](#instructions)
+6. [Comparisons and Flags](#comparisons)
+7. [Jumps and Control Flow](#jumps)
+8. [LEA vs MOV](#lea-vs-mov)
+9. [Examples](#examples)
+10. [GDB](#gdb)
 
 ## Syntax Differences <a name="syntax"></a>
 
@@ -83,6 +85,18 @@ pushq %rax           # Push %rax onto stack
 popq %rbx           # Pop top of stack into %rbx
 ```
 
+## Basic Operators <a name="operators"></a>
+
+| Operator | Description | Details |
+|----------|-------------|----------|
+| mov | Moves data between registers, memory, or immediate values | See [LEA vs MOV](#lea-vs-mov) |
+| lea | Calculates address without accessing memory | See [LEA vs MOV](#lea-vs-mov) |
+| add | Adds source to destination, stores in destination | Affects flags |
+| sub | Subtracts source from destination, stores in destination | Affects flags |
+| cmp | Subtracts source from destination but only sets flags | See [Comparisons and Flags](#comparisons) |
+| jmp | Unconditional jump to specified location | See [Jumps and Control Flow](#jumps) |
+
+
 ## Instructions <a name="instructions"></a>
 
 ### Data Movement
@@ -111,6 +125,54 @@ popq %rbx           # Pop top of stack into %rbx
 | not         | Bitwise NOT | `notq %rax` |
 | shl/sal     | Shift left  | `shlq $1, %rax` |
 | shr         | Shift right | `shrq $2, %rbx` |
+
+
+## Comparisons and Flags <a name="comparisons"></a>
+
+### Flag Register
+The RFLAGS register contains several important status flags:
+- ZF (Zero Flag): Set when result is zero
+- SF (Sign Flag): Set when result is negative
+- CF (Carry Flag): Set when unsigned overflow occurs
+- OF (Overflow Flag): Set when signed overflow occurs
+
+### Comparison Types
+1. **Unsigned Comparisons**
+   - Use CF and ZF flags
+   - Suitable for memory addresses and array indices
+   - Common instructions: ja (above), jb (below), jae, jbe
+
+2. **Signed Comparisons**
+   - Use SF, OF, and ZF flags
+   - Suitable for signed integers
+   - Common instructions: jg (greater), jl (less), jge, jle
+
+### Comparison Instructions
+```gas
+# Compare instructions
+cmpq %rbx, %rax    # Compare rax with rbx
+testq %rax, %rax   # Test if rax is zero (optimized compare)
+
+# Common comparison patterns
+cmpq $0, %rax      # Compare with zero
+testq %rax, %rax   # Check if zero (more efficient)
+cmpq %rbx, %rax    # Compare two values
+
+# After comparison, use conditional jumps
+je  .L_equal       # Jump if equal (ZF=1)
+jne .L_not_equal   # Jump if not equal (ZF=0)
+jg  .L_greater     # Jump if greater (signed)
+ja  .L_above       # Jump if above (unsigned)
+```
+
+### Size-Specific Comparisons
+```gas
+cmpb # Compare bytes (8-bit)
+cmpw # Compare words (16-bit)
+cmpl # Compare long words (32-bit)
+cmpq # Compare quad words (64-bit)
+```
+
 
 ## Jumps and Control Flow <a name="jumps"></a>
 
