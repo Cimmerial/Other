@@ -2,15 +2,16 @@
 
 ## Table of Contents
 
-1.  [Number Systems: Binary & Hexadecimal](number-systems)
-2.  [Logic Gates](logic-gates)
-3.  [Transistors: The Building Blocks](transistors)
-4.  [Truth Tables: Mapping Logic](truth-tables)
-5.  [Karnaugh Maps: Minimizing Logic Expressions](karnaugh-maps)
-6.  [DeMorgan's Laws: Simplifying Logic](demorgans-laws)
-7.  [Verilog: Hardware Description Language](verilog)
-8.  [Components: Building Blocks of Digital Systems](components)
-9.  [Analog to Digital and Digital to Analog Conversion](ad-da-conversion)
+1.  [Number Systems: Binary & Hexadecimal](#number-systems)
+2.  [Logic Gates](#logic-gates)
+3.  [Transistors: The Building Blocks](#transistors)
+4.  [Truth Tables: Mapping Logic](#truth-tables)
+5.  [Karnaugh Maps: Minimizing Logic Expressions](#karnaugh-maps)
+6.  [DeMorgan's Laws: Simplifying Logic](#demorgans-laws)
+7.  [Verilog: Hardware Description Language](#verilog)
+8.  [Components: Building Blocks of Digital Systems](#components)
+9.  [Analog to Digital and Digital to Analog Conversion](#ad-da-conversion)
+10.  [Examples](#exam-examples)
 
 ## 1\. Number Systems: Binary & Hexadecimal <a name="number-systems"></a>
 
@@ -1024,3 +1025,204 @@ Cin -->| FA 0|-->| FA 1|-->| FA 2|-->| FA 3|--> Cout (Final Carry)
   - **Reconstruction (DAC):** Digital values are converted back into analog signals, often using techniques to smooth the output and approximate the original analog waveform.
 
 ADCs and DACs are essential interfaces between the digital and analog worlds, allowing digital systems to interact with and control analog environments.
+
+## 10. Exam-Style Examples and Exercises <a name="exam-examples"></a>
+
+This section provides examples and exercises that expand on the concepts covered in this guide, particularly in the style of typical digital logic exam questions.
+
+### 11.1 Truth Tables and Boolean Equivalence
+
+**Example 11.1.1: Proving Boolean Equivalence using a Truth Table**
+
+**Question:** Use a truth table to show that  **(x + y') ⋅ (x' + z)** is equivalent to **x ⋅ z + x' ⋅ y'**.
+
+**Solution:**
+
+| x | y | z | y' | x' | x + y' | x' + z | (x + y') ⋅ (x' + z) | x ⋅ z | x' ⋅ y' | x ⋅ z + x' ⋅ y' |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1 |
+| 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1 |
+| 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1 |
+| 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1 |
+
+**Analysis:**  Comparing the columns for **(x + y') ⋅ (x' + z)** and **x ⋅ z + x' ⋅ y'**, we see they are identical for all input combinations. Therefore, the two expressions are equivalent.
+
+**Example 11.1.2: Logic Gates and Verilog for a Boolean Expression**
+
+**Question:** Consider the Boolean expression **(x XOR y) NAND z**.
+
+**(a) Draw the logic gates for this circuit using AND, OR, NOT, XOR, and NAND gates.**
+
+**(b) Write a Verilog module for this expression. The module should input three bits `x`, `y`, and `z`, and output a single bit `out`.**
+
+**Solution:**
+
+**(a) Logic Gates for (x XOR y) NAND z:**
+
+```
+     -----       -----
+x ---|     |-----|     |-------
+    -| XOR |     | NAND|--- out
+y ---|     |-----|     |-------
+     -----             /
+z --------------------/
+```
+
+**(b) Verilog Module for (x XOR y) NAND z:**
+
+```verilog
+module xor_nand_z (
+  input  x,
+  input  y,
+  input  z,
+  output out
+);
+
+  assign out = ~((x ^ y) & z); // ^ is XOR, & is AND, ~ is NOT in Verilog
+
+endmodule
+```
+
+### 11.2 Modular Verilog Design
+
+**Example 11.2.1: Deriving Boolean Equation from Truth Table**
+
+**Question:** Given the following truth table, write a Sum-of-Products (SOP) Boolean equation for output **Q** in terms of inputs **A**, **B**, and **C**.
+
+| A | B | C | Q |
+|---|---|---|---|
+| 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 1 |
+| 0 | 1 | 0 | 1 |
+| 0 | 1 | 1 | 0 |
+| 1 | 0 | 0 | 0 |
+| 1 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 1 |
+| 1 | 1 | 1 | 1 |
+
+**Solution:**
+
+1.  **Identify rows where Q = 1:** Rows 2, 3, 7, 8.
+2.  **Write AND term for each row:**
+    *   Row 2 (001):  A' ⋅ B' ⋅ C
+    *   Row 3 (010):  A' ⋅ B ⋅ C'
+    *   Row 7 (110):  A ⋅ B ⋅ C'
+    *   Row 8 (111):  A ⋅ B ⋅ C
+3.  **OR all AND terms together (SOP):**
+
+    **Q = (A' ⋅ B' ⋅ C) + (A' ⋅ B ⋅ C') + (A ⋅ B ⋅ C') + (A ⋅ B ⋅ C)**
+
+**Example 11.2.2: Modular Verilog - Building `or3` using `or2`**
+
+**Question:** Given a pre-defined Verilog module `or2` that performs a bitwise OR between two inputs:
+
+```verilog
+module or2 (input a, input b, output out);
+  assign out = a | b;
+endmodule
+```
+
+Create a 3-bit OR module, `or3`, that takes three 1-bit inputs (a, b, c) and outputs their bitwise OR. You can only use instances of the `or2` module; you may not use the `|` operator, ternary operator, or `if` statements directly within `or3`.
+
+**Solution:**
+
+```verilog
+module or3 (
+  input a, b, c,
+  output out
+);
+
+  wire temp_or; // Intermediate wire
+
+  // Instantiate or2 to OR inputs a and b
+  or2 or_gate1 (
+    .a(a),
+    .b(b),
+    .out(temp_or)
+  );
+
+  // Instantiate another or2 to OR the result with input c
+  or2 or_gate2 (
+    .a(temp_or),
+    .b(c),
+    .out(out)
+  );
+
+endmodule
+```
+
+**Explanation:**
+
+We create a hierarchical design by instantiating two `or2` modules. The first `or2` module (`or_gate1`) ORs inputs `a` and `b`, and its output is connected to an intermediate wire `temp_or`.  The second `or2` module (`or_gate2`) then ORs this intermediate result `temp_or` with input `c` to produce the final output `out`. This demonstrates modular design by reusing a simpler `or2` module to build a more complex `or3` functionality.
+
+### 11.3 DE-10 Lite HEX Display
+
+**Example 11.3.1: 7-Segment Display for Digit '3'**
+
+**Question:** If you want to set the DE-10 Lite HEX0 display to show the digit '3', what hexadecimal value should you assign to it? Recall that the DE-10 Lite hex display segments are active-low and wired as shown in the guide's "Components" section (repeated below for convenience).
+
+```
+     -------
+    | a   b |
+   f|     c |
+    |   g   |
+   e|     d |
+    |     . | dp
+     -------
+```
+
+**Solution:**
+
+To display '3' on a 7-segment display, we need to illuminate segments a, b, c, d, and g. Since the segments are active-low, we need to set the corresponding bits to '0' to turn them ON, and '1' to turn them OFF.
+
+*   Segments to turn ON for '3': a, b, c, d, g
+*   Segments to turn OFF for '3': e, f, dp (decimal point, typically not used for digits)
+
+Mapping segments to bits (assuming a-g, dp order for bits [7:0] or [6:0] if no dp):
+
+| Segment | a | b | c | d | e | f | g | dp |
+|---|---|---|---|---|---|---|---|---|
+| Digit '3' Segments ON/OFF | ON | ON | ON | ON | OFF | OFF | ON | OFF |
+| Active-Low Value (0=ON, 1=OFF) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 |
+| Binary Value (dp-a order) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+
+Reading the binary value in reverse order (a-g, dp) and converting to hexadecimal:
+
+Binary: `0000 1101`  (or segments gfedcba with '1' for off, '0' for on:  g=0, f=1, e=1, d=0, c=0, b=0, a=0) - **Incorrect order assumption earlier.**
+
+Correct segment order typically `abcdefg[dp]` (bits [7:0] or [6:0] if no dp, from MSB to LSB). Let's reassess with `abcdefg` order.  And segments are active LOW - 0 turns segment ON.
+
+* Digit '3' segments ON: a, b, c, d, g
+* Segments OFF: e, f, dp
+
+| Segment | a | b | c | d | e | f | g | dp |
+|---|---|---|---|---|---|---|---|---|
+| Digit '3' Segments ON/OFF | ON | ON | ON | ON | OFF | OFF | ON | OFF |
+| Active-Low Value | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 |
+| Binary Value (abcdefg dp order - MSB to LSB) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 |
+
+Hexadecimal conversion of binary `0000 1101`:  `0x0D`
+
+**Answer:** To display '3' on HEX0 of the DE-10 Lite, you should assign it the hexadecimal value **0x0D**.
+
+**Example 11.3.2: 7-Segment Display for Letter 'E' (Conceptual)**
+
+**Question:**  What hexadecimal value would you assign to HEX0 to *attempt* to display the letter 'E'? Note that 7-segment displays are primarily designed for digits and have limitations in displaying letters clearly.
+
+**Solution:**
+
+To approximate 'E' on a 7-segment display, we would typically illuminate segments: a, d, e, f, g.
+
+| Segment | a | b | c | d | e | f | g | dp |
+|---|---|---|---|---|---|---|---|---|
+| Letter 'E' (Approx.) Segments ON/OFF | ON | OFF | OFF | ON | ON | ON | ON | OFF |
+| Active-Low Value | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 |
+| Binary Value (abcdefg dp order) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 |
+
+Hexadecimal conversion of binary `0110 0001`: `0x61`
+
+**Answer:** To approximate 'E' on HEX0, you might try assigning **0x61**.  Keep in mind that the 'E' will be an approximation and may not be perfectly recognizable due to the limitations of 7-segment displays for alphanumeric characters. For letters, sometimes a combination of uppercase and lowercase representations, or just the closest visual approximation is used.
